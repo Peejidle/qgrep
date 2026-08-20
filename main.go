@@ -67,7 +67,13 @@ func main() {
 		}
 		fmt.Printf("Title: %s\nScore: %d\nLink: %s\n", question.Title, question.Score, question.Link)
 		if len(parsedAnswers.Items) > 0 {
-			fmt.Printf("Answer: %s\n", parsedAnswers.Items[0].Body)
+			cleanAnswer, err := cleanBody(parsedAnswers.Items[0].Body)
+			if err != nil {
+				fmt.Println("Error: Couldn't strip Body of tags:", err)
+				continue
+			}
+
+			fmt.Printf("Answer: %s\n", cleanAnswer)
 		}
 		fmt.Println("=====================================================================================================================================\n")
 	}
@@ -127,7 +133,7 @@ func cleanBody(body string) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	doc.Children().Each(func(i int, s *goquery.Selection) {
+	doc.Find("body").Children().Each(func(i int, s *goquery.Selection) {
 		name := goquery.NodeName(s)
 		if name == "pre" {
 			result += "\n[code]\n" + s.Text() + "\n[/code]\n"
