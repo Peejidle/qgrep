@@ -1,6 +1,7 @@
 package main
 
 import (
+	"github.com/PuerkitoBio/goquery"
 	"encoding/json"
 	"net/http"
 	"net/url"
@@ -117,4 +118,22 @@ func unmarshalAnswers(rawAnswers []byte) (AnswersJson, error) {
 		return parsedAnswers, err
 	}
 	return parsedAnswers, nil
+}
+
+func cleanBody(body string) (string, error) {
+	var result string 
+
+	doc, err := goquery.NewDocumentFromReader(strings.NewReader(body))
+	if err != nil {
+		return "", err
+	}
+	doc.Children().Each(func(i int, s *goquery.Selection) {
+		name := goquery.NodeName(s)
+		if name == "pre" {
+			result += "\n[code]\n" + s.Text() + "\n[/code]\n"
+		} else if name == "p" {
+			result += s.Text() + "\n"
+		}
+	})
+	return result, nil
 }
